@@ -21,6 +21,7 @@ from ...model.canon import Quality
 from ...orthography.adapter import Reading
 from ...orthography.cluster import read_verse
 from ...orthography.inventory import Inventory, load_inventory
+from ...stop_editions import load_overlay, with_marks
 from ..khilaf import Khilaf, load_khilaf
 from ..tables import RuleTables, load_rule_tables
 
@@ -35,6 +36,13 @@ SCRIPTS = (Script.UTHMANI, Script.INDOPAK)
 QUALITY_FALLBACKS = {Quality.KUBRA: Quality.I}
 
 DATA = Path(__file__).resolve().parents[2] / "data" / "riwayat" / "hafs"
+
+#: Madinah mushaf printings whose waqf marks this riwayah packages, by the
+#: hijri year of the printing. The corpus binary carries the 1405 marks; the
+#: 1421 marks, which Digital Khatt writes, are an overlay and the default.
+STOP_EDITIONS = ("1421", "1405")
+DEFAULT_STOP_EDITION = "1421"
+STOP_OVERLAY_DIR = DATA / "corpus" / "stop_editions"
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,6 +144,14 @@ def lexeme_passes() -> tuple:
 
 
 @lru_cache(maxsize=None)
-def corpus() -> PackedCorpus:
+def base_corpus() -> PackedCorpus:
+    """The packaged binary, carrying the 1405 waqf marks."""
     return load_corpus(DATA / "corpus" / "quran_db.bin",
                        DATA / "corpus" / "surah_info.json")
+
+
+@lru_cache(maxsize=None)
+def corpus(stop_edition: str = DEFAULT_STOP_EDITION) -> PackedCorpus:
+    if stop_edition == "1405":
+        return base_corpus()
+    return with_marks(base_corpus(), load_overlay(STOP_OVERLAY_DIR / f"{stop_edition}.json"))

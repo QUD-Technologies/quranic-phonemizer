@@ -61,8 +61,13 @@ class Adapter:
         )
 
 
+#: Warsh packages the one edition its source writes; it has no alternative.
+STOP_EDITIONS: tuple[str, ...] = ()
+DEFAULT_STOP_EDITION = None
+
+
 @lru_cache(maxsize=None)
-def corpus() -> AlignedCorpus:
+def corpus(stop_edition: str | None = None) -> AlignedCorpus:
     return load_aligned_corpus(
         DATA / "corpus" / "alignment.jsonl.gz", artifact=ARTIFACT
     )

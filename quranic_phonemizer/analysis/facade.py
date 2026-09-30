@@ -86,6 +86,14 @@ def available_stop_signs(
     )
 
 
+def available_stop_editions(riwayah: str) -> tuple[str, ...]:
+    """Mushaf printings whose waqf marks the riwayah packages, default first.
+    Empty when the riwayah packages a single edition."""
+    from ..api import PACKAGES
+
+    return PACKAGES[check_riwayah(riwayah)].STOP_EDITIONS
+
+
 def available_variants(riwayah: str) -> dict[str, dict[str, object]]:
     return recitation(check_riwayah(riwayah)).khilaf.points()
 
@@ -343,6 +351,9 @@ class Phonemizer:
     script: str | None = None
     variants: dict | None = None
     extra_phonemes: tuple[str, ...] = ()
+    #: The mushaf printing whose waqf marks are read, from
+    #: `available_stop_editions`. None is the riwayah's default.
+    stop_edition: str | None = None
 
     def __post_init__(self) -> None:
         name = check_riwayah(self.riwayah)
@@ -354,7 +365,7 @@ class Phonemizer:
                 f"{sorted(unknown)} is not optional for {name.value}; "
                 f"choose from {sorted(allowed)}"
             )
-        loaded = recitation(name)
+        loaded = recitation(name, self.stop_edition)
         script = _script_for(name, self.script)
         selection = _selection(self.variants)
         loaded.khilaf.validate(selection)

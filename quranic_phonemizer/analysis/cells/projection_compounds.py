@@ -34,6 +34,13 @@ def _replace_sound_columns(word, removed, kept):
     )
 
 
+def _reattach(columns, removed, kept):
+    """Point marks that sat on a folded-away column at the column it joined."""
+    for index, column in enumerate(columns):
+        if column.attached_to_column_id in removed:
+            columns[index] = replace(column, attached_to_column_id=kept)
+
+
 def _rules_for(word, sounds):
     wanted = set(sounds)
     return _unique(
@@ -282,6 +289,7 @@ def fold_triple_hamza_badal(words, facts, pen):
                 continue
             inserted, dagger = columns[at + 2 : at + 4]
             columns[at : at + 4] = folded
+            _reattach(columns, {inserted.id, dagger.id}, folded[1].id)
             word = replace(word, sounds=_replace_sound_columns(
                 word, {inserted.id, dagger.id}, folded[1].id,
             ))
@@ -335,6 +343,7 @@ def fold_combining_hamza_seats(words: tuple[CellWord, ...]) -> tuple[CellWord, .
                 presented_sound_ids=hamza.presented_sound_ids,
             )
             del columns[at + 1]
+            _reattach(columns, {hamza.id}, seat.id)
             word = replace(
                 word,
                 sounds=_replace_sound_columns(word, {hamza.id}, seat.id),
@@ -394,6 +403,7 @@ def fold_marked_ibdal_carriers(
                 slot_ids=_unique((*carrier.slot_ids, *hamza.slot_ids)),
             )
             del columns[at + 1]
+            _reattach(columns, {hamza.id}, carrier.id)
             word = replace(
                 word,
                 sounds=_replace_sound_columns(word, {hamza.id}, carrier.id),
@@ -463,6 +473,7 @@ def fold_naql_badal_alif_daggers(
                 slot_ids=_unique((*alif.slot_ids, *dagger.slot_ids)),
             )
             columns[at : at + 2] = [combined]
+            _reattach(columns, {dagger.id}, alif.id)
             word = replace(
                 word,
                 sounds=_replace_sound_columns(word, {dagger.id}, alif.id),
@@ -525,6 +536,7 @@ def fold_article_naql_madd(words: tuple[CellWord, ...], facts) -> tuple[CellWord
             )
             removed = {haraka.id, madd.id}
             columns[at : at + 3] = [combined]
+            _reattach(columns, removed, alif.id)
             word = replace(
                 word,
                 sounds=_replace_sound_columns(word, removed, alif.id),

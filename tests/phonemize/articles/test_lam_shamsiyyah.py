@@ -23,7 +23,7 @@ CASES = (
          char_rules={"ل[1]": R("lam_shamsiyyah"),
                      "ل[2]": R("lam_shamsiyyah")},
          sound_rules={"ñ": R("lam_shamsiyyah"), "sˤsˤ": R("lam_shamsiyyah")}),
-    # Hafs: ٱلزَّادِ ٱلتَّقْوَىٰ ۚ
+    # Hafs: ٱلزَّادِ ٱلتَّقْوَىٰ ۖ
     # Warsh: اَ۬لزَّادِ اِ۬لتَّقْو۪ىٰۖ
     Case(id="zay-taa", site=Site.shared("2:197", (25, 26)), read=through(),
          phonemes=pick(

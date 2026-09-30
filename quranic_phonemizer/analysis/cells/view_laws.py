@@ -37,6 +37,17 @@ def _all_columns(view: CellView) -> dict[int, object]:
     return out
 
 
+def _check_attachments(view: CellView) -> None:
+    """A mark sits on a column that exists; a fold must carry it along."""
+    columns = _all_columns(view)
+    for column in columns.values():
+        host = column.attached_to_column_id
+        _require(
+            host is None or host.value in columns,
+            f"column {column.id.value} is attached to missing column {getattr(host, 'value', host)}",
+        )
+
+
 def _all_cells(view: CellView) -> list[CellSound]:
     cells: list[CellSound] = [c for word in view.words for c in word.sounds]
     for word in view.words:
@@ -378,6 +389,7 @@ def validate_cell_view(
     view: CellView, bundle: AnalysisBundle, source: SourceView
 ) -> None:
     _check_stop_signs(view, bundle)
+    _check_attachments(view)
     _check_one_cell_per_sound(view, bundle)
     _check_no_iltiqa_bridge(view, bundle)
     _check_bridges(view, bundle, source)
