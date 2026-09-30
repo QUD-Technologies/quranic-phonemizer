@@ -18,10 +18,12 @@ TOOLS = ROOT / "tools"
 #: so a new package must declare itself before anything may reach it. `""`
 #: is the package root; `dataio` and `model` are leaves by construction.
 ALLOWED: dict[str, set[str]] = {
-    "": {"analysis", "model"},
+    "": {"analysis", "model", "stop_editions"},
     "dataio": set(),
     "model": set(),
     "corpus": {"model"},
+    # Waqf-mark overlays over a packed corpus: one mushaf edition as another.
+    "stop_editions": {"corpus"},
     "orthography": {"dataio", "model"},
     "canon": {"dataio", "model", "orthography"},
     "engine": {"model"},
@@ -29,12 +31,13 @@ ALLOWED: dict[str, set[str]] = {
     "render": {"dataio", "model"},
     "riwayat": {
         "canon", "corpus", "dataio", "engine", "model", "orthography", "rules",
+        "stop_editions",
     },
     # The composition root. Nothing imports it, so a second riwayah stays
     # additive: it appears here and nowhere else.
     "api": {
         "canon", "corpus", "engine", "model", "orthography", "render",
-        "riwayat",
+        "riwayat", "stop_editions",
     },
     # The resolved request: words, boundaries, and the built score. It reads
     # the request layers and nothing of the projection above it.
