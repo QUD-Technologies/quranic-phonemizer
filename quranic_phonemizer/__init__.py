@@ -5,6 +5,7 @@ from .analysis.facade import (
     UnknownExtraPhoneme,
     UnknownRule,
     UnknownStopSign,
+    available_stop_editions,
     available_stop_signs,
     available_variants,
     supported_riwayat,
@@ -19,6 +20,7 @@ from .model.address import (
     UnknownRiwayah,
     VariantSelection,
 )
+from .stop_editions import UnknownStopEdition
 
 __all__: list[str] = [
     "KhilafId",
@@ -30,8 +32,10 @@ __all__: list[str] = [
     "UnknownExtraPhoneme",
     "UnknownRiwayah",
     "UnknownRule",
+    "UnknownStopEdition",
     "UnknownStopSign",
     "VariantSelection",
+    "available_stop_editions",
     "available_stop_signs",
     "available_variants",
     "variant_catalogue",

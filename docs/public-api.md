@@ -21,6 +21,7 @@ reader = Phonemizer(
     script="uthmani",
     variants={"iqlab_nasal": "closed"},
     extra_phonemes=("emphatic_fatha", "emphatic_ikhfaa"),
+    stop_edition="1421",
 )
 ```
 
@@ -30,10 +31,16 @@ reader = Phonemizer(
 - `variants` selects scalar choices from the reading's khilaf catalogue.
 - `extra_phonemes` enables optional notation distinctions. Fixed distinctions
   remain active without being listed here.
+- `stop_edition` selects which Madinah mushaf printing's waqf marks the text
+  carries. Hafs packages `1421` (the default, as written by Digital Khatt) and
+  `1405`. They differ only in the marks on about 350 words; the words and
+  their spelling are identical. Warsh packages a single edition and accepts
+  only `None`. `available_stop_editions(riwayah)` lists the choices, default
+  first; an unpackaged name raises `UnknownStopEdition`.
 
-Construction validates riwayah, script, variants, and optional phonemes before
-a request is run. `UnknownExtraPhoneme` and `UnknownRiwayah` are public
-`ValueError` subclasses.
+Construction validates riwayah, script, variants, optional phonemes, and stop
+edition before a request is run. `UnknownExtraPhoneme`, `UnknownRiwayah`, and
+`UnknownStopEdition` are public `ValueError` subclasses.
 
 ## Configuration-scoped catalogues
 
@@ -50,6 +57,7 @@ Equivalent metadata queries are available at the package root:
 
 ```python
 from quranic_phonemizer import (
+    available_stop_editions,
     available_stop_signs,
     available_variants,
     variant_catalogue,
@@ -57,6 +65,7 @@ from quranic_phonemizer import (
     tajweed_rules,
 )
 
+available_stop_editions("hafs")
 available_stop_signs("hafs", script="uthmani")
 available_variants("hafs")
 variant_catalogue("hafs")
