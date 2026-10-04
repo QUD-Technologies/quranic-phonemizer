@@ -1,10 +1,14 @@
-# Quranic Phonemizer
+<a href="https://phonemizer.qud.dev"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/banner-ink.png">
+  <img alt="Quranic Phonemizer: Quran text to sounds, with every tajweed rule on the letter it lives on." src=".github/banner-paper.png">
+</picture></a>
 
 <p align="center">
   <a href="https://pypi.org/project/quranic-phonemizer/"><img src="https://img.shields.io/pypi/v/quranic-phonemizer" alt="PyPI version"></a>
   <a href="https://phonemizer.qud.dev/"><img src="https://img.shields.io/badge/Demo-Website-blue" alt="Website"></a>
   <a href="https://openreview.net/forum?id=hZt0JK28iV"><img src="https://img.shields.io/badge/Paper-OpenReview-red" alt="Paper"></a>
   <a href="https://github.com/QUD-Technologies/quranic-phonemizer/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/quranic-phonemizer" alt="License"></a>
+  <a href="https://discord.gg/cZ3V2FynXz"><img src="https://img.shields.io/badge/Discord-Join-5865f2?logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
 Quranic Grapheme-to-Phoneme (G2P) converter and tajweed annotator for the riwayat of Hafs 'An Asim and Warsh 'An Nafi' that converts text to phoneme sequences with comprehensive support for waqf/ibtidaa transformations and tajweed breakdowns.
