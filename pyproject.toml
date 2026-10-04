@@ -46,8 +46,8 @@ ignore = ["E741"]  # Quality.I is domain vocabulary, not a throwaway name.
 
 [project.urls]
 Homepage = "https://quranicphonemizer.com"
-Repository = "https://github.com/Hetchy/Quranic-Phonemizer"
-Issues = "https://github.com/Hetchy/Quranic-Phonemizer/issues"
+Repository = "https://github.com/QUD-Technologies/quranic-phonemizer"
+Issues = "https://github.com/QUD-Technologies/quranic-phonemizer/issues"
 
 [tool.setuptools_scm]
 
