@@ -5,8 +5,8 @@ authors:
   - family-names: Ibrahim
     given-names: Ahmed
 date-released: 2025-08-10
-url: "https://github.com/Hetchy/Quranic-Phonemizer"
-repository-code: "https://github.com/Hetchy/Quranic-Phonemizer"
+url: "https://github.com/QUD-Technologies/quranic-phonemizer"
+repository-code: "https://github.com/QUD-Technologies/quranic-phonemizer"
 version: "2.9.0"
 license: MIT
 preferred-citation:
