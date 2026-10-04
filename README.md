@@ -1,7 +1,11 @@
-<a href="https://phonemizer.qud.dev"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/banner-ink.png">
-  <img alt="Quranic Phonemizer: Quran text to sounds, with every tajweed rule on the letter it lives on." src=".github/banner-paper.png">
-</picture></a>
+<p align="center">
+  <a href="https://phonemizer.qud.dev">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/banner-ink.png">
+      <img alt="Quranic Phonemizer: Quran text to sounds, with every tajweed rule on the letter it lives on." src=".github/banner-paper.png">
+    </picture>
+  </a>
+</p>
 
 <p align="center">
   <a href="https://pypi.org/project/quranic-phonemizer/"><img src="https://img.shields.io/pypi/v/quranic-phonemizer" alt="PyPI version"></a>
