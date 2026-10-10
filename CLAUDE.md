@@ -70,8 +70,10 @@ two pytest workers to bound corpus memory while parallelizing independent cases.
 
 ## Deploy
 
-Releases are `v*` tags, built and uploaded from this machine. There is no
-publish workflow; a tag reaching GitHub does not ship anything.
+Releases are annotated `v*` tags. The version comes from the tag
+(setuptools-scm), so there is no version commit. Pushing the tag runs
+`.github/workflows/publish.yml`, which builds and uploads to PyPI; do not
+also upload by hand.
 
 Before tagging, run the precheck and read its report:
 
@@ -98,8 +100,11 @@ Release once the report reads as intended:
 ```bash
 python tools/gates.py
 python -m pytest tests/conformance/test_warsh_cell_projection.py --runslow -q
-python -m build && python -m twine upload dist/*
+git tag -a vX.Y.Z -m "vX.Y.Z: <summary>" && git push origin vX.Y.Z
 ```
+
+The site pins the release in `requirements.txt`, and merging to its main
+deploys the Space, so bump that pin only after the version is on PyPI.
 
 Cross-script, L1, roundtrip, attestation, and legacy snapshot tools are manual
 audits. Run pytest-based audits explicitly with
