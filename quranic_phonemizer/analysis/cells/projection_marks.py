@@ -277,19 +277,23 @@ def _pausal_consonant_text(word, col, facts, slot_of_unit, pen) -> str:
     return pen.pausal_hamza(quality)
 
 
-def fold_pausal_sukun(
-    word: CellWord, facts: AnalysisFacts, slot_of_unit, pen: Pen
-) -> CellWord:
-    """Put a stopped consonant's recovered sukun in its native letter cell."""
-    stopped = facts.junctions[word.word_id.value] in {Junction.STOP, Junction.EDGE}
-    pausal = {
+def pausal_slots(facts: AnalysisFacts) -> frozenset:
+    """Slots whose vowel a boundary occurrence silenced."""
+    return frozenset(
         slot
         for edge in facts.silences
         if edge.aspect is Aspect.VOWEL
         and edge.by is not None
         and facts.occurrences[edge.by].boundary is not None
         for slot in edge.slots
-    }
+    )
+
+
+def fold_pausal_sukun(
+    word: CellWord, facts: AnalysisFacts, slot_of_unit, pen: Pen, pausal
+) -> CellWord:
+    """Put a stopped consonant's recovered sukun in its native letter cell."""
+    stopped = facts.junctions[word.word_id.value] in {Junction.STOP, Junction.EDGE}
     consonants = [col for col in word.columns if _owns_consonant(col, facts)]
     final = consonants[-1] if stopped and consonants else None
     if final is not None and not _needs_pausal_sukun(
@@ -366,5 +370,6 @@ __all__ = [
     "fold_shared_silence_riders",
     "fold_maqsura_daggers",
     "fold_pausal_sukun",
+    "pausal_slots",
     "transform_plain_madd",
 ]

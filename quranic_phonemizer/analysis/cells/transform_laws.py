@@ -171,12 +171,8 @@ def _check_no_raw_eased_hamza_marks(
         )
 
 
-def _check_no_redundant_dropped_riders(word: CellWord, bundle: AnalysisBundle) -> None:
+def _check_no_redundant_dropped_riders(word: CellWord, rules: dict) -> None:
     columns = {column.id: column for column in word.columns}
-    rules = {
-        occurrence.id: occurrence.rule_id.value
-        for occurrence in bundle.rule_occurrences
-    }
     for rider in word.columns:
         if (
             rider.tier is CellTier.MAIN
@@ -213,12 +209,16 @@ def validate_transformed(
         for unit_id, columns in columns_by_unit.items()
         if _is_partitioned_unit(unit_id, columns, source)
     }
+    rules = {} if bundle is None else {
+        occurrence.id: occurrence.rule_id.value
+        for occurrence in bundle.rule_occurrences
+    }
     for word in view.words:
         if bundle is not None:
             _check_no_raw_eased_hamza_marks(word.columns, bundle)
         _check_no_duplicate_vowel_riders(word.columns)
         if bundle is not None:
-            _check_no_redundant_dropped_riders(word, bundle)
+            _check_no_redundant_dropped_riders(word, rules)
     for col in _all_columns(view):
         if col.status is CellStatus.INSERTED:
             _check_inserted(col, units)

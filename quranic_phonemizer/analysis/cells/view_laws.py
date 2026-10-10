@@ -289,7 +289,10 @@ def validate_spoken_hamza_glyphs(
     bundle: AnalysisBundle,
 ) -> None:
     """Every plain hamza sound has a visible original or replacement glyph."""
-    columns = _all_columns(view).values()
+    owners_of: dict = {}
+    for column in _all_columns(view).values():
+        for owned in dict.fromkeys(column.owned_sound_ids):
+            owners_of.setdefault(owned, []).append(column)
     rules = {
         occurrence.id: occurrence.rule_id.value
         for occurrence in bundle.rule_occurrences
@@ -297,7 +300,7 @@ def validate_spoken_hamza_glyphs(
     for sound in bundle.sounds:
         if not is_hamza_token(sound.token):
             continue
-        owners = [column for column in columns if sound.id in column.owned_sound_ids]
+        owners = owners_of.get(sound.id, [])
         _require(owners, f"spoken hamza {sound.id.value} has no owning column")
         _require(
             any(

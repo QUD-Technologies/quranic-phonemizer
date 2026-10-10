@@ -35,6 +35,7 @@ class _Reading:
     slot_of_unit: dict[int, SlotId]
     owner_of_sound: dict[int, int]
     main_units: tuple[int, ...]
+    main_unit_set: frozenset[int]
     variant_of_unit: dict[int, Option]
     below_units: frozenset[int]
     written_on: dict[int, int]
@@ -95,7 +96,7 @@ def _reading(view: SourceView, facts: AnalysisFacts, insc: InscriptionFacts,
     )
     return _Reading(
         long_vowel, consonant, canonical_quality, slot_of_unit, owner, main,
-        _variant_of_unit(view, session), below, written_on,
+        frozenset(main), _variant_of_unit(view, session), below, written_on,
         {slot: tuple(units) for slot, units in mains_of_slot.items()},
         consonant_units,
         {unit.id.value: unit.word_id.value for unit in view.units},
@@ -181,9 +182,8 @@ def _main_of_slot(unit_id: int, reading: _Reading) -> int | None:
 def _followed_to_main(target: int, reading: _Reading) -> int | None:
     """A written_on target may itself be a riding mark -- the iqlab meem sits on
     the tanween, not the letter. Follow it to the main column it rests on."""
-    main = set(reading.main_units)
     seen: set[int] = set()
-    while target not in main:
+    while target not in reading.main_unit_set:
         nxt = reading.written_on.get(target)
         if nxt is None or nxt in seen:
             return _main_of_slot(target, reading)
