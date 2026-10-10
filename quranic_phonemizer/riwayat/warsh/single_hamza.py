@@ -7,7 +7,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from ...canon.draft import _Draft, nucleus_fact
-from ...canon.passes import word_spans
+from ...canon.passes import word_spans, word_texts
 from ...dataio import load_yaml, require_keys
 from ...model.address import KhilafId, Location
 from ...model.canon import (
@@ -127,19 +127,6 @@ def fixed_ibdal_family(text: str) -> str | None:
     return None
 
 
-def _word_text(reading, word: int) -> str:
-    offsets = {
-        cluster.offset for cluster in reading.clusters if cluster.word == word
-    }
-    offsets.update(
-        mark.offset
-        for cluster in reading.clusters if cluster.word == word
-        for mark in cluster.marks
-    )
-    by_offset = {glyph.id.offset: glyph.char for glyph in reading.graphemes}
-    return "".join(by_offset[offset] for offset in sorted(offsets))
-
-
 def _fixed_target(family: str, span):
     if family == "nasi":
         return next(
@@ -254,6 +241,7 @@ def supply_single_hamza(definitions):
         chosen_antum = (
             antum.choose(selection) if antum is not None else "ibdal"
         )
+        texts = word_texts(reading)
         for word, (location, span) in enumerate(
             zip(reading.words, word_spans(reading, drafts))
         ):
@@ -268,7 +256,7 @@ def supply_single_hamza(definitions):
             if location in authored_locations("allai"):
                 _supply_allai(span, drafts, scribe)
                 continue
-            text = _word_text(reading, word)
+            text = texts[word]
             family = fixed_ibdal_family(text)
             if family is not None:
                 _fixed_target(family, span).annotations |= {Annotation.IBDAL}

@@ -8,7 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from ...canon.draft import _Draft, nucleus_fact
-from ...canon.passes import word_spans
+from ...canon.passes import word_spans, word_texts
 from ...dataio import require_keys
 from ...model.address import Location
 from ...model.canon import Annotation, CanonLetter, Nucleus, Onset, Quality, SlotOrigin
@@ -123,27 +123,14 @@ def _one_word(reading, drafts, scribe, span, row: MeetingRow) -> None:
         second.onset = Onset.TASHIL
 
 
-def _word_text(reading, word: int) -> str:
-    offsets = {
-        cluster.offset for cluster in reading.clusters if cluster.word == word
-    }
-    offsets.update(
-        mark.offset
-        for cluster in reading.clusters if cluster.word == word
-        for mark in cluster.marks
-    )
-    by_offset = {glyph.id.offset: glyph.char for glyph in reading.graphemes}
-    return "".join(by_offset[offset] for offset in sorted(offsets))
-
-
 def _cluster_offsets(reading, cluster_index: int) -> frozenset[int]:
     cluster = reading.clusters[cluster_index]
     return frozenset((cluster.offset, *(mark.offset for mark in cluster.marks)))
 
 
-def _restore_right_qata(reading, drafts, scribe, right, row: MeetingRow):
+def _restore_right_qata(reading, texts, drafts, scribe, right, row: MeetingRow):
     right_word = reading.words.index(row.canonical)
-    if not _word_text(reading, right_word).startswith(("ا", "أ", "إ", "ء")):
+    if not texts[right_word].startswith(("ا", "أ", "إ", "ء")):
         return None
     first_cluster = next(
         index for index, cluster in enumerate(reading.clusters)
@@ -188,6 +175,7 @@ def supply_hamza_meetings(reading, drafts, lexicon, scribe, selection) -> None:
     if scribe is None:
         return
     spans = dict(zip(reading.words, word_spans(reading, drafts)))
+    texts = word_texts(reading)
     for row in meeting_rows():
         if row.canonical not in spans:
             continue
@@ -198,7 +186,7 @@ def supply_hamza_meetings(reading, drafts, lexicon, scribe, selection) -> None:
             _one_word(reading, drafts, scribe, right, row)
             continue
         joined = row.previous in spans
-        second = _restore_right_qata(reading, drafts, scribe, right, row)
+        second = _restore_right_qata(reading, texts, drafts, scribe, right, row)
         if second is None:
             continue
         if row.exception in {"jaa_aal", "fused_badal"}:

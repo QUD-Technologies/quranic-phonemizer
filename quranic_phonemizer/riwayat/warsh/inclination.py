@@ -5,7 +5,7 @@ import json
 from functools import lru_cache
 from pathlib import Path
 
-from ...canon.passes import word_spans
+from ...canon.passes import word_spans, word_texts
 from ...model.address import KhilafId, Location
 from ...model.canon import CanonLetter, Nucleus, Quality, SlotOrigin, VowelState
 from ...model.inscription import SlotFact
@@ -116,27 +116,14 @@ def _is_raa_short_witness(text: str, offset: int) -> bool:
     )
 
 
-def _word_text(reading, word: int) -> str:
-    offsets = {
-        cluster.offset for cluster in reading.clusters if cluster.word == word
-    }
-    offsets.update(
-        mark.offset
-        for cluster in reading.clusters if cluster.word == word
-        for mark in cluster.marks
-    )
-    by_offset = {glyph.id.offset: glyph.char for glyph in reading.graphemes}
-    return "".join(by_offset[offset] for offset in sorted(offsets))
-
-
-def _marked_clusters(reading, word: int) -> tuple[tuple[int, int], ...]:
-    return tuple(
-        (index, mark.offset)
-        for index, cluster in enumerate(reading.clusters)
-        if cluster.word == word
-        for mark in cluster.marks
-        if mark.role == "inclination_witness"
-    )
+def _marked_clusters(reading) -> list[list[tuple[int, int]]]:
+    """Per word, each (cluster, offset) of an inclination witness mark."""
+    marked: list[list[tuple[int, int]]] = [[] for _ in reading.words]
+    for index, cluster in enumerate(reading.clusters):
+        for mark in cluster.marks:
+            if mark.role == "inclination_witness":
+                marked[cluster.word].append((index, mark.offset))
+    return marked
 
 
 def _target_for_cluster(span, cluster: int):
@@ -197,9 +184,9 @@ def _quality(location: Location, choices) -> Quality:
 
 
 def _supply_marked(
-    reading, span, word: int, location: Location, scribe, choices
+    marked, span, location: Location, scribe, choices
 ) -> None:
-    for cluster, offset in _marked_clusters(reading, word):
+    for cluster, offset in marked:
         target = _target_for_cluster(span, cluster)
         if target is None:
             continue
@@ -372,12 +359,14 @@ def supply_inclination(definitions):
             return
         choices = _choices(definitions, selection)
         spans = word_spans(reading, drafts)
+        texts = word_texts(reading)
+        marked = _marked_clusters(reading)
         for word, (location, span) in enumerate(zip(reading.words, spans)):
             if not span:
                 continue
             _repair_naml_badal_carrier(drafts, span, location, scribe)
-            text = _word_text(reading, word)
-            _supply_marked(reading, span, word, location, scribe, choices)
+            text = texts[word]
+            _supply_marked(marked[word], span, location, scribe, choices)
             _supply_lam_coupled(span, location, choices)
             _supply_haa_verse_heads(span, location, choices)
             _supply_yaseen(span, location, choices)
