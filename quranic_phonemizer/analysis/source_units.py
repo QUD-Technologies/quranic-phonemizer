@@ -261,16 +261,17 @@ def _folded_compact_vowel_openers(insc) -> frozenset[int]:
     for edge in insc.spellings:
         if isinstance(edge, Supplied) and edge.fact is SlotFact.LETTER:
             letters_by_glyph.setdefault(edge.glyph, set()).add(edge.slot)
+    compact = {
+        slot for slots in letters_by_glyph.values() if len(slots) > 1
+        for slot in slots
+    }
     return frozenset(
         edge.glyph
         for edge in insc.spellings
         if isinstance(edge, Supplied)
         and edge.fact is SlotFact.VOWEL_QUALITY
         and insc.glyphs[edge.glyph].kind is GlyphKind.SMALL_VOWEL
-        and any(
-            edge.slot in slots and len(slots) > 1
-            for slots in letters_by_glyph.values()
-        )
+        and edge.slot in compact
     )
 
 
