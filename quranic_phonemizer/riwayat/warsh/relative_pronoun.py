@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unicodedata
 
-from ...canon.passes import word_spans
+from ...canon.passes import word_spans, word_texts
 from ...model.canon import CanonLetter, Nucleus, Onset, Quality
 from ...model.inscription import SlotFact
 
@@ -51,25 +51,12 @@ def relative_pronoun_form(text: str) -> bool:
     return _skeleton(text) in _ALL_FORMS
 
 
-def _word_text(reading, word: int) -> str:
-    offsets = {
-        cluster.offset for cluster in reading.clusters if cluster.word == word
-    }
-    offsets.update(
-        mark.offset
-        for cluster in reading.clusters
-        if cluster.word == word
-        for mark in cluster.marks
-    )
-    by_offset = {glyph.id.offset: glyph.char for glyph in reading.graphemes}
-    return "".join(by_offset[offset] for offset in sorted(offsets))
-
-
 def supply_relative_pronoun(reading, drafts, lexicon, scribe, selection) -> None:
     """Restore the pronounced geminate lam omitted by the selected script."""
     del lexicon, selection
+    texts = word_texts(reading)
     for word, span in enumerate(word_spans(reading, drafts)):
-        skeleton = _skeleton(_word_text(reading, word))
+        skeleton = _skeleton(texts[word])
         following_letter = next(
             (letter for letter, forms in _FORMS.items() if skeleton in forms),
             None,

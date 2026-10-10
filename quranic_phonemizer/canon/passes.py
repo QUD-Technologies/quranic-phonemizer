@@ -49,6 +49,20 @@ def word_spans(reading: Reading, drafts) -> list[list[_Draft]]:
     return spans
 
 
+def word_texts(reading: Reading) -> tuple[str, ...]:
+    """Each source word's cluster and mark scalars, in offset order."""
+    by_offset = {glyph.id.offset: glyph.char for glyph in reading.graphemes}
+    offsets: list[set[int]] = [set() for _ in reading.words]
+    for cluster in reading.clusters:
+        word = offsets[cluster.word]
+        word.add(cluster.offset)
+        word.update(mark.offset for mark in cluster.marks)
+    return tuple(
+        "".join(by_offset[offset] for offset in sorted(word))
+        for word in offsets
+    )
+
+
 def word_bounds(reading: Reading) -> tuple[tuple[int, int], ...]:
     """Half-open cluster bounds grouped by source word."""
     bounds = [[-1, -1] for _ in reading.words]

@@ -57,9 +57,8 @@ class Inclination:
             return None
         realized = next(
             (
-                effect.sound for effect in plan.effects()
+                effect.sound for effect in plan.effects_at(at)
                 if isinstance(effect, Realize)
-                and effect.slot == at
                 and effect.aspect is Aspect.VOWEL
             ),
             None,
@@ -154,9 +153,7 @@ class CarrierTarqeeq:
         """
         quality = state.quality
         long = state.form is VowelForm.LONG
-        for effect in plan.effects():
-            if getattr(effect, "slot", None) != at:
-                continue
+        for effect in plan.effects_at(at):
             if (
                 isinstance(effect, Realize)
                 and effect.aspect is Aspect.VOWEL
@@ -193,7 +190,7 @@ class CarrierTarqeeq:
                 and effect.aspect is Aspect.VOWEL
                 for effect in verdict.effects
             )
-            for _, verdict in plan.entries
+            for verdict in plan.verdicts_at(at)
         ):
             return None
         occurrence = Occurrence(

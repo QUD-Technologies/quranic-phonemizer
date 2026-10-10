@@ -194,9 +194,8 @@ def _key(near: Neighbourhood, word: int, at: SlotId) -> RaaKey:
 
 def _performed_quality(slot, at, plan, near, boundaries):
     realized = next((
-        effect.sound for effect in plan.effects()
+        effect.sound for effect in plan.effects_at(at)
         if isinstance(effect, Realize)
-        and effect.slot == at
         and effect.aspect is Aspect.VOWEL
         and isinstance(effect.sound, Vowel)
     ), None)
