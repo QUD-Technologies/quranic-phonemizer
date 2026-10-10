@@ -312,8 +312,18 @@ The following distinctions are deliberately outside the variant API:
   only for Hafs; Warsh always renders its typed eased hamza as `ʔ̞`. Neither
   changes the typed sound feature or named rule. [Phoneme and rule
   contract](warsh/research/v2/phoneme-rule-inventory.md)
-- Warsh Yaseen-noon is fixed idgham. [Al-Wafi, opening-letter
-  junctions](https://www.islamweb.net/amp/ar/library/content/245/26/)
+- Warsh pair assimilation is fixed, as the selected script writes it: the dal
+  of `قَد` merges into dad and zaa, feminine taa into zaa, and the dhal of the
+  `أخذ` family into taa (`اَ۪تَّخَذتُّمُ`, but not `فَنَبَذْتُهَا` or `عُذْتُ`).
+  `يَلْهَثْ ذَٰلِكَ`, `اِ۪رْكَبْ مَعَنَا`, and `وَيُعَذِّبْ مَنْ` keep izhar,
+  so the Hafs `yalhath_dhalik` and `irkab_maana` selectors have no Warsh face.
+  Fixed izhar at `يَلْهَثْ ذَٰلِكَ` is the Shatibiyya path; al-Nashr also
+  reports an idgham face for al-Azraq. [Pair-assimilation
+  register](warsh/research/v2/pair-assimilation.md)
+- Warsh Yaseen-noon is fixed idgham, the Shatibiyya path; al-Nashr gives
+  al-Azraq a khulf with izhar from al-Tajrid. [Al-Wafi, opening-letter
+  junctions](https://www.islamweb.net/amp/ar/library/content/245/26/),
+  [Al-Nashr](https://www.islamweb.net/ar/library/content/70/149/)
 - Taha is fixed imala kubra. [Al-Nashr, opening-letter
   inclination](https://www.islamweb.net/ar/library/content/70/169/)
 - The triple-hamza forms `أَءَالِهَتُنَا` and `أَءَامَنتُم`, and

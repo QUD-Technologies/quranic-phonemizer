@@ -27,6 +27,10 @@ class Idgham:
     never_follows: frozenset[CanonLetter] = frozenset()
     article: ArticleShape = field(default_factory=ArticleShape)
     choices: tuple[object, ...] = ()
+    stems: frozenset[tuple[CanonLetter, CanonLetter, CanonLetter]] = frozenset()
+    """`(previous, first, second)`: a pair named here assimilates only where
+    `previous` stands before its first letter in the same word, as Warsh
+    merges the dhal of `أَخَذتُّمْ` but not of `نَبَذْتُهَا`."""
     rule: Rule = Rule.IDGHAM_MUTAMATHILAYN
     phase: Phase = Phase.MERGE
     triggers: frozenset = field(default=frozenset())
@@ -68,7 +72,7 @@ class Idgham:
             rule = Rule.IDGHAM_MUTAMATHILAYN
         else:
             rule = self.pairs.of(here.letter, following.letter)
-            if rule is None:
+            if rule is None or not self._in_stem(near, at, following.letter):
                 return None
 
         if here.letter in NASAL_LETTERS and here.letter is following.letter:
@@ -115,4 +119,21 @@ class Idgham:
                 ),
                 MergeInto(at, Aspect.CONSONANT, following.id, Aspect.CONSONANT),
             ),
+        )
+
+    def _in_stem(
+        self, near: Neighbourhood, at: SlotId, second: CanonLetter
+    ) -> bool:
+        here = near.slot(at)
+        required = {
+            previous for previous, first, following in self.stems
+            if first is here.letter and following is second
+        }
+        if not required:
+            return True
+        previous = near.before(at)
+        return (
+            previous is not None
+            and previous.letter in required
+            and near.word_of(previous.id) == near.word_of(at)
         )

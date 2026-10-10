@@ -1,0 +1,23 @@
+# Warsh through al-Azraq overrides only the pair table; the rest is shared.
+schema_version: 1
+
+# An adjacent pair that assimilates, first letter into second. Warsh reads
+# `يَلْهَثْ ذَّٰلِكَ` (7:176), `اِ۪رْكَبْ مَعَنَا` (11:42) and `وَيُعَذِّبْ مَن`
+# (2:284) with izhar, so neither thaa-dhal nor baa-meem is listed. The dal of
+# `قَد` merges into dad and zaa, feminine taa into zaa, and the dhal of the
+# `أَخَذتُّمْ` family into taa; `stems` in rules.py confines the last.
+pairs:
+  idgham_mutajanisayn_kamil:
+    - [د, ت]
+    - [ت, د]
+    - [ت, ط]
+    - [ذ, ظ]
+  idgham_mutajanisayn_naqis:
+    - [ط, ت]
+  idgham_mutaqaribayn:
+    - [ل, ر]
+    - [ق, ك]
+    - [د, ض]
+    - [د, ظ]
+    - [ت, ظ]
+    - [ذ, ت]
