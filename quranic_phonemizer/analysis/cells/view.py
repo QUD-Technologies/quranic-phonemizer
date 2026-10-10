@@ -17,7 +17,7 @@ from ...session import Session
 from ..build import build_bundle
 from ..dtos import Boundary, Merger
 from ..facts import analyse
-from ..ids import CellColumnId
+from ..ids import BoundaryId, CellColumnId
 from ..inscription import inscribe
 from ..source import build_source_view
 from ..source_dtos import Character, CharacterKind, SourceView
@@ -124,14 +124,14 @@ def _bridge(
     )
 
 
-def _boundary_signs(boundary: Boundary, source: SourceView) -> tuple[Character, ...]:
-    """Every written stop or sakt sign the source assigns to this boundary, in
-    text order; a boundary may carry more than one."""
-    return tuple(
-        c
-        for c in source.characters
-        if c.boundary_id == boundary.id and c.kind is CharacterKind.STOP_SIGN
-    )
+def _boundary_signs(source: SourceView) -> dict[BoundaryId, tuple[Character, ...]]:
+    """Every written stop or sakt sign by boundary ID, in text order; a boundary
+    may carry more than one."""
+    signs: dict[BoundaryId, list[Character]] = {}
+    for c in source.characters:
+        if c.kind is CharacterKind.STOP_SIGN:
+            signs.setdefault(c.boundary_id, []).append(c)
+    return {boundary: tuple(found) for boundary, found in signs.items()}
 
 
 def _stop_sign_column(signs: tuple[Character, ...], new_id: int) -> CellColumn:
@@ -172,11 +172,12 @@ def _boundaries(
         )
     exclusive = _exclusive_groups(bundle.boundaries)
     words = {word.id.value: word for word in bundle.words}
+    signs = _boundary_signs(source)
     out: list[CellBoundary] = []
     for boundary in bundle.boundaries:
         if boundary.before is None:
             continue
-        column = _stop_sign_column(_boundary_signs(boundary, source), next_id)
+        column = _stop_sign_column(signs.get(boundary.id, ()), next_id)
         next_id += 1
         out.append(
             CellBoundary(

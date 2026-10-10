@@ -66,14 +66,22 @@ def _slot_letter(facts: AnalysisFacts, slot: SlotId) -> CanonLetter:
     return facts.slots[facts.slot_index[slot]].letter
 
 
-def _paired_owner(facts, tok, insc, slot: SlotId, base: int) -> int:
+def _riders_by_base(tok: Tokenization) -> dict[int, list[int]]:
+    """Base unit -> the units written on it, in unit order."""
+    riders: dict[int, list[int]] = {}
+    for index, unit in enumerate(tok.units):
+        if unit.written_on_anchor is None:
+            continue
+        base = tok.unit_of_anchor.get(unit.written_on_anchor)
+        if base is not None:
+            riders.setdefault(base, []).append(index)
+    return riders
+
+
+def _paired_owner(facts, tok, insc, riders, slot: SlotId, base: int) -> int:
     """A base letter and the mini seen written on it are a seen/saad pair; the
     read half is the one whose letter is the slot's, the other stays silent."""
-    marks = [
-        i for i, unit in enumerate(tok.units)
-        if unit.written_on_anchor is not None
-        and tok.unit_of_anchor.get(unit.written_on_anchor) == base
-    ]
+    marks = riders.get(base)
     if not marks:
         return base
     base_letter = _LETTER_OF_BASE.get(insc.glyphs[tok.units[base].anchor].char)
@@ -81,14 +89,8 @@ def _paired_owner(facts, tok, insc, slot: SlotId, base: int) -> int:
 
 
 def _riding_pair_units(tok: Tokenization) -> frozenset[int]:
-    pairs: set[int] = set()
-    for index, unit in enumerate(tok.units):
-        if unit.written_on_anchor is None:
-            continue
-        base = tok.unit_of_anchor.get(unit.written_on_anchor)
-        if base is not None:
-            pairs.update((base, index))
-    return frozenset(pairs)
+    riders = _riders_by_base(tok)
+    return frozenset(riders).union(*riders.values())
 
 
 def _variant_pair_units(
@@ -110,13 +112,15 @@ def _variant_pair_units(
     )
 
 
-def _unit_at(facts, tok, insc, carriers,
+def _unit_at(facts, tok, insc, carriers, riders,
              slot: SlotId, aspect: Aspect, sound: int) -> int | None:
     if aspect is Aspect.VOWEL:
         return _vowel_unit(facts, tok, carriers, slot, sound)
     # A tanween's own noon has no letter of its own; its unit is the tanween.
     base = tok.roles.letter.get(slot, tok.roles.vowel.get(slot))
-    return None if base is None else _paired_owner(facts, tok, insc, slot, base)
+    if base is None:
+        return None
+    return _paired_owner(facts, tok, insc, riders, slot, base)
 
 
 def _present_carrier_vowel(
@@ -153,11 +157,12 @@ def _naql_witness_unit(facts, tok, insc, edge) -> int | None:
 def _owners_and_presenters(facts, tok, insc, carriers):
     owner: dict[int, int] = {}
     presenters: dict[int, set[int]] = defaultdict(set)
+    riders = _riders_by_base(tok)
     for edge in facts.hosts:
         unit = _naql_witness_unit(facts, tok, insc, edge)
         if unit is None:
             unit = _unit_at(
-                facts, tok, insc, carriers,
+                facts, tok, insc, carriers, riders,
                 edge.slots[0], edge.aspect, edge.sound,
             )
         if unit is not None:
@@ -169,7 +174,7 @@ def _owners_and_presenters(facts, tok, insc, carriers):
                 )
     for edge in facts.insertions:
         unit = _unit_at(
-            facts, tok, insc, carriers,
+            facts, tok, insc, carriers, riders,
             edge.anchor[0], edge.aspect, edge.sound,
         )
         if unit is not None:
@@ -177,7 +182,7 @@ def _owners_and_presenters(facts, tok, insc, carriers):
     for edge in facts.merges:
         unit = (
             _unit_at(
-                facts, tok, insc, carriers,
+                facts, tok, insc, carriers, riders,
                 edge.slots[0], edge.aspect, edge.sound,
             )
             if edge.aspect is Aspect.VOWEL
@@ -266,15 +271,17 @@ def _orthographic_units(facts, tok, insc) -> frozenset[int]:
 
 def _orthographic_seats(tok: Tokenization) -> frozenset[int]:
     """A rasm seat stays silent when another unit writes the slot's letter."""
-    letters = set(tok.roles.letter.values())
-    vowels = set(tok.roles.vowel.values())
-    carriers = set(tok.roles.carrier.values())
+    roles = (
+        set(tok.roles.letter.values())
+        | set(tok.roles.vowel.values())
+        | set(tok.roles.carrier.values())
+    )
     return frozenset(
         index for index, unit in enumerate(tok.units)
         if unit.kind is LetterUnitKind.LETTER
         and unit.slot is not None
         and tok.roles.letter.get(unit.slot) is not None
-        and index not in letters | vowels | carriers
+        and index not in roles
     )
 
 

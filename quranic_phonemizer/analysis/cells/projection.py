@@ -37,6 +37,7 @@ from .projection_marks import (
     fold_pausal_sukun,
     fold_shared_silence_riders,
     fold_vowel_ishmam_presenter,
+    pausal_slots,
     transform_plain_madd,
 )
 from .projection_naql import split_carried_naql_alif
@@ -47,40 +48,62 @@ from .projection_semantics import (
 from .projection_sukun import fold_sukun
 
 
-def _column_targets(words: tuple[CellWord, ...], sound: int, *, presenters=False):
-    field = "presented_sound_ids" if presenters else "owned_sound_ids"
-    return [c for w in words for c in w.columns if SoundId(sound) in getattr(c, field)]
+class _ColumnIndex:
+    """Columns in text order, looked up by owned sound, presented sound,
+    silence, and source slot."""
+
+    def __init__(self, words: tuple[CellWord, ...], slot_of_unit) -> None:
+        self.columns = [c for w in words for c in w.columns]
+        self.owners: dict[SoundId, list] = {}
+        self.presenters: dict[SoundId, list] = {}
+        self.at_slot: dict[object, list[int]] = {}
+        self.silenced: dict[object, list] = {}
+        for index, col in enumerate(self.columns):
+            self.silenced.setdefault(col.silence, []).append(col)
+            for sound in dict.fromkeys(col.owned_sound_ids):
+                self.owners.setdefault(sound, []).append(col)
+            for sound in dict.fromkeys(col.presented_sound_ids):
+                self.presenters.setdefault(sound, []).append(col)
+            for unit in col.source_unit_ids:
+                slot = slot_of_unit.get(unit.value)
+                self.at_slot.setdefault(slot, []).append(index)
+
+    def sound(self, sound: int, *, presenters=False) -> list:
+        found = (self.presenters if presenters else self.owners).get(SoundId(sound))
+        return list(found or ())
+
+    def in_slots(self, slots) -> list:
+        found = {index for slot in set(slots) for index in self.at_slot.get(slot, ())}
+        return [self.columns[index] for index in sorted(found)]
 
 
-def _silenced_targets(columns, edge, slot_of_unit):
+def _silenced_targets(index: _ColumnIndex, edge):
     roles = (
         {CellRole.HARAKA, CellRole.TANWEEN, CellRole.MADD}
         if edge.aspect is Aspect.VOWEL
         else {CellRole.LETTER}
     )
-    slots = set(edge.slots)
     return [
         col
-        for col in columns
+        for col in index.in_slots(edge.slots)
         if not isinstance(col.silence, LiteralSilence)
         and (col.role in roles or col.silence == OccurrenceId(edge.by))
-        and any(slot_of_unit.get(unit.value) in slots for unit in col.source_unit_ids)
     ]
 
 
-def _modifier_targets(words, columns, facts, modifier):
+def _modifier_targets(index: _ColumnIndex, facts, modifier):
     occurrence = OccurrenceId(modifier.by)
     carrier_only = (
         isinstance(modifier, Relengthened)
         and facts.occurrences[modifier.by].rule is Rule.ILTIQA_SHORTENING
     )
     if carrier_only:
-        return [col for col in columns if col.silence == occurrence]
-    targets = _column_targets(words, modifier.sound)
+        return list(index.silenced.get(occurrence, ()))
+    targets = index.sound(modifier.sound)
     if isinstance(modifier, Classified) or isinstance(
         facts.sounds[modifier.sound].value, Vowel
     ):
-        targets.extend(_column_targets(words, modifier.sound, presenters=True))
+        targets.extend(index.sound(modifier.sound, presenters=True))
     return targets
 
 
@@ -90,7 +113,7 @@ def _place_rules(
     placed: dict[int, list[OccurrenceId]] = {
         c.id.value: [] for w in words for c in w.columns
     }
-    columns = [c for w in words for c in w.columns]
+    index = _ColumnIndex(words, slot_of_unit)
     merged = {
         (edge.by, edge.sound) for edge in facts.attributions if isinstance(edge, Merged)
     }
@@ -109,11 +132,11 @@ def _place_rules(
             continue
         occurrence = OccurrenceId(edge.by)
         if isinstance(edge, Merged):
-            targets = _column_targets(words, edge.sound, presenters=True)
+            targets = index.sound(edge.sound, presenters=True)
         elif isinstance(edge, Silenced):
-            targets = _silenced_targets(columns, edge, slot_of_unit)
+            targets = _silenced_targets(index, edge)
         elif isinstance(edge, (Hosted, Insertion)):
-            targets = _column_targets(words, edge.sound)
+            targets = index.sound(edge.sound)
         else:
             targets = []
         for col in targets:
@@ -121,7 +144,7 @@ def _place_rules(
                 placed[col.id.value].append(occurrence)
     for modifier in facts.modifiers:
         occurrence = OccurrenceId(modifier.by)
-        for col in _modifier_targets(words, columns, facts, modifier):
+        for col in _modifier_targets(index, facts, modifier):
             if occurrence not in placed[col.id.value]:
                 placed[col.id.value].append(occurrence)
     return tuple(
@@ -182,7 +205,10 @@ def project_words(
     out = tuple(fold_maqsura_daggers(word) for word in out)
     out = tuple(fold_sukun(word) for word in out)
     slot_of_unit = slot_of_columns(source, insc)
-    out = tuple(fold_pausal_sukun(word, facts, slot_of_unit, pen) for word in out)
+    pausal = pausal_slots(facts)
+    out = tuple(
+        fold_pausal_sukun(word, facts, slot_of_unit, pen, pausal) for word in out
+    )
     next_id = next_column_id(out)
     carried = []
     for word in out:
