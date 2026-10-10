@@ -68,6 +68,30 @@ plus `phonemes(by="word")`, wall time and process peak working set:
 Peak memory is dominated by the retained score and documents, not by the
 removed scans. A single verse remains about 0.02 s.
 
+The lazy projections follow the same rule. Source ownership groups riding
+marks by their base unit once, and cell rule placement looks columns up in
+one index by owned sound, presented sound, silence, and slot rather than
+scanning every column of the request per attribution edge. Request-wide sets
+(pausal slots, stop signs by boundary, rule names, hamza owners) are built
+once per view, not once per word or sound.
+
+Each document requested in turn after one `analyse()`, wall time in seconds
+(the source view is cached and reused by the cell views; same host and
+caveats as above):
+
+| Request | `source_view` | `cell_view` source | `cell_view` transformed |
+| --- | --- | --- | --- |
+| Hafs 18, before | 19.0 | 10.4 | 119.3 |
+| Hafs 18, after | 1.5 | 1.9 | 2.6 |
+| Warsh 18, before | 18.7 | 10.5 | 93.7 |
+| Warsh 18, after | 1.8 | 2.4 | 3.4 |
+| Hafs 2, after | 6.2 | 6.9 | 11.1 |
+| Warsh 2, after | 7.2 | 9.2 | 14.3 |
+
+`analysis_result` and `highlight_groups` stay under 1.5 s for surah 2. Before
+this change, every document for Hafs surah 2 under both boundary plans took
+64 minutes in total.
+
 ## Large requests
 
 One whole-surah or whole-Quran request keeps its complete score, inscription,
