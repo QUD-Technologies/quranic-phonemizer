@@ -158,6 +158,7 @@ class Plan:
     _removed: set[tuple[SlotId, Aspect]] = field(default_factory=set)
     _voweled: set[SlotId] = field(default_factory=set)
     _lengthened: set[SlotId] = field(default_factory=set)
+    _at: dict[SlotId, list[Verdict]] = field(default_factory=dict)
 
     def record(self, phase: Phase, verdict: Verdict) -> None:
         for effect in verdict.effects:
@@ -193,11 +194,27 @@ class Plan:
             elif isinstance(effect, Relength) and effect.length is Length.LONG:
                 self._lengthened.add(effect.slot)
         self.entries.append((phase, verdict))
+        for slot in dict.fromkeys(
+            effect.slot for effect in verdict.effects
+            if not isinstance(effect, Insert)
+        ):
+            self._at.setdefault(slot, []).append(verdict)
 
     def effects(self, phase: Phase | None = None):
         for recorded_phase, verdict in self.entries:
             if phase is None or recorded_phase is phase:
                 yield from verdict.effects
+
+    def verdicts_at(self, slot: SlotId) -> list[Verdict]:
+        """Recorded verdicts with an effect naming this slot, in record order."""
+        return self._at.get(slot, [])
+
+    def effects_at(self, slot: SlotId):
+        """Effects naming this slot, in record order."""
+        for verdict in self.verdicts_at(slot):
+            for effect in verdict.effects:
+                if not isinstance(effect, Insert) and effect.slot == slot:
+                    yield effect
 
     def merged_away(self, slot: SlotId, aspect: Aspect) -> bool:
         return (slot, aspect) in self._removed
@@ -212,16 +229,15 @@ class Plan:
                 and effect.aspect is aspect
                 for effect in verdict.effects
             )
-            for _, verdict in self.entries
+            for verdict in self.verdicts_at(slot)
         )
 
     def realized_consonant(self, slot: SlotId):
         """The consonant an earlier phase realized on this slot, if any."""
         found = None
-        for effect in self.effects():
+        for effect in self.effects_at(slot):
             if (
                 isinstance(effect, Realize)
-                and effect.slot == slot
                 and effect.aspect is Aspect.CONSONANT
             ):
                 found = effect.sound
@@ -248,7 +264,7 @@ class Plan:
             and MergeInto(
                 previous, Aspect.VOWEL, slot, Aspect.VOWEL
             ) in verdict.effects
-            for _, verdict in self.entries
+            for verdict in self.verdicts_at(slot)
         )
 
     def joined_ibdal_length(self, slot: SlotId) -> bool:
@@ -269,5 +285,5 @@ class Plan:
                 and effect.host_aspect is Aspect.VOWEL
                 for effect in verdict.effects
             )
-            for _, verdict in self.entries
+            for verdict in self.verdicts_at(slot)
         )
