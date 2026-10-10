@@ -312,6 +312,11 @@ The following distinctions are deliberately outside the variant API:
   only for Hafs; Warsh always renders its typed eased hamza as `ʔ̞`. Neither
   changes the typed sound feature or named rule. [Phoneme and rule
   contract](warsh/research/v2/phoneme-rule-inventory.md)
+- Warsh pair assimilation is fixed, as the selected script writes it: the dal
+  of `قَد` merges into dad and zaa, feminine taa into zaa, and the dhal of the
+  `أخذ` family into taa (`اَ۪تَّخَذتُّمُ`, but not `فَنَبَذْتُهَا` or `عُذْتُ`).
+  `يَلْهَثْ ذَٰلِكَ`, `اِ۪رْكَبْ مَعَنَا`, and `وَيُعَذِّبْ مَنْ` keep izhar,
+  so the Hafs `yalhath_dhalik` and `irkab_maana` selectors have no Warsh face.
 - Warsh Yaseen-noon is fixed idgham. [Al-Wafi, opening-letter
   junctions](https://www.islamweb.net/amp/ar/library/content/245/26/)
 - Taha is fixed imala kubra. [Al-Nashr, opening-letter

@@ -76,10 +76,8 @@ CASES = (
     ),
     # Warsh: يَلْهَثْۖ ذَٰلِكَ
     Case(id="thaa-dhal-warsh", site=Site(warsh=("7:176", (20, 21))), read=through(),
-         phonemes=("j a l h a", "ðð a: l i k"),
-         char_rules={"ث": R("idgham_mutajanisayn_kamil"),
-                     "ذ": R("idgham_mutajanisayn_kamil")},
-         sound_rules={"ðð": R("idgham_mutajanisayn_kamil")}),
+         phonemes=("j a l h a θ", "ð a: l i k"),
+         absent_char_rules={"ث": R("idgham_mutajanisayn_kamil")}),
     # Hafs: أَثْقَلَت دَّعَوَا
     # Warsh: أَثْقَلَت دَّعَوَا
     Case(id="taa-daal", site=Site.shared("7:189", (20, 21)), read=through(),
@@ -137,10 +135,16 @@ CASES = (
     ),
     # Warsh: اِ۪رْكَبْ مَعَنَا
     Case(id="irkab-maana-warsh", site=Site(warsh=("11:42", (14, 15))), read=through(),
-         phonemes=("ʔ i rˤ k a", "m̃ a ʕ a n a:"),
-         char_rules={"ب": R("idgham_mutajanisayn_kamil"),
-                     "م": R("idgham_mutajanisayn_kamil")},
-         sound_rules={"m̃": R("idgham_mutajanisayn_kamil")}),
+         phonemes=("ʔ i rˤ k a b Q", "m a ʕ a n a:"),
+         char_rules={"ب": R("qalqala_sughra")},
+         sound_rules={"Q": R("qalqala_sughra")},
+         absent_char_rules={"ب": R("idgham_mutajanisayn_kamil")}),
+    # Warsh: وَيُعَذِّبْ مَنْ
+    Case(id="yuadhdhib-man-warsh", site=Site(warsh=("2:284", (21, 22))),
+         read=through(),
+         phonemes=("w a j u ʕ a ðð i b Q", "m a n"),
+         char_rules={"ب": R("qalqala_sughra")},
+         absent_char_rules={"ب": R("idgham_mutajanisayn_kamil")}),
 )
 
 

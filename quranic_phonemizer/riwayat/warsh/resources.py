@@ -111,7 +111,9 @@ def lexicon() -> Lexicon:
 
 @lru_cache(maxsize=None)
 def rule_tables() -> RuleTables:
-    return load_rule_tables(DATA.parents[1] / "shared" / "rules.yaml")
+    return load_rule_tables(
+        DATA.parents[1] / "shared" / "rules.yaml", DATA / "rules.yaml"
+    )
 
 
 @lru_cache(maxsize=None)

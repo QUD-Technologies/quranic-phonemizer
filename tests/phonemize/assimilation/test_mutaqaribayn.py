@@ -49,6 +49,40 @@ CASES = (
          sound_rules={"kk": R("idgham_mutaqaribayn")},
          absent_char_rules={"ق": R(
              "tafkheem", "qalqala_sughra", "qalqala_kubra", "qalqala_akbar")}),
+    # Warsh: فَقَد ضَّلَّ
+    StateCase(id="qad-dad-warsh", site=Site(warsh=("2:108", (15, 16))), states={
+        "joined": Expect(read=through(), phonemes=("f a q aˤ", "dˤdˤ aˤ ll"),
+                         char_rules={"د": R("idgham_mutaqaribayn"),
+                                     "ض": R("idgham_mutaqaribayn")},
+                         sound_rules={"dˤdˤ": R("idgham_mutaqaribayn")},
+                         absent_char_rules={"د": R("qalqala_sughra")}),
+        "ibtidaa-on-host": Expect(read=explicit(ibtidaa=15, waqf=15),
+                          phonemes=("f a q aˤ d Q", "dˤ aˤ ll a"),
+                          absent_char_rules={"د": R("idgham_mutaqaribayn"),
+                                             "ض": R("idgham_mutaqaribayn")}),
+    }),
+    # Warsh: فَقَد ظَّلَمَ
+    Case(id="qad-zaa-warsh", site=Site(warsh=("65:1", (31, 32))), read=through(),
+         phonemes=("f a q aˤ", "ðˤðˤ aˤ lˤ aˤ m"),
+         char_rules={"د": R("idgham_mutaqaribayn"),
+                     "ظ": R("idgham_mutaqaribayn")},
+         sound_rules={"ðˤðˤ": R("idgham_mutaqaribayn")}),
+    # Warsh: كَانَت ظَّالِمَةٗ
+    Case(id="taa-zaa-warsh", site=Site(warsh=("21:11", (5, 6))), read=through(),
+         phonemes=("k a: n a", "ðˤðˤ aˤ: l i m a h"),
+         char_rules={"ت": R("idgham_mutaqaribayn"),
+                     "ظ": R("idgham_mutaqaribayn")},
+         sound_rules={"ðˤðˤ": R("idgham_mutaqaribayn")}),
+    # Warsh: اَ۪تَّخَذتُّمُ
+    Case(id="ittakhadhtum-warsh", site=Site(warsh=("2:51", (7,))), read=isolated(),
+         phonemes="ʔ i tt a x aˤ tt u m",
+         char_rules={"ذ": R("idgham_mutaqaribayn"),
+                     "ت[2]": R("idgham_mutaqaribayn")},
+         sound_rules={"tt[2]": R("idgham_mutaqaribayn")}),
+    # Warsh: فَنَبَذْتُهَا
+    Case(id="nabadhtuha-warsh", site=Site(warsh=("20:96", (12,))), read=isolated(),
+         phonemes="f a n a b a ð t u h a:",
+         absent_char_rules={"ذ": R("idgham_mutaqaribayn")}),
 )
 
 

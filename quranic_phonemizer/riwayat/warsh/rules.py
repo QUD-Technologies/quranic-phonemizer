@@ -5,7 +5,7 @@ from __future__ import annotations
 from ...engine.classifier import RuleSet
 from ...engine.plan import Phase
 from ...model.address import KhilafId, Location, Riwayah
-from ...model.canon import Quality
+from ...model.canon import CanonLetter, Quality
 from ...rules.annotation import CanonicalColour, CarrierTarqeeq, Inclination
 from ...rules.boundary import (
     DroppedGlide,
@@ -84,6 +84,10 @@ _NAQL_IBDAL_MEETINGS = frozenset(
     for row in meeting_rows()
     if row.scope == "one_word" and row.owner == "hamza_dhat_fath"
 )
+
+#: Dhal merges into taa only in the `أخذ` family, so `نَبَذْتُهَا` and
+#: `عُذْتُ` keep it.
+_AKHADHA_DHAL = frozenset({(CanonLetter.KHA, CanonLetter.THAL, CanonLetter.TA)})
 
 # Canonical locations of مَوْئِلا and الْمَوْءُودَة.  Only the first waw of
 # the latter can satisfy the leen predicate; its following long remains badal.
@@ -168,6 +172,7 @@ def _build() -> RuleSet:
                     pairs=tables.pairs,
                     never_follows=tables.never_follows,
                     article=article,
+                    stems=_AKHADHA_DHAL,
                 ),
             ),
             Phase.LENGTH: (
