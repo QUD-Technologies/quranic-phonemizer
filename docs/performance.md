@@ -89,8 +89,8 @@ caveats as above):
 | Warsh 2, after | 7.2 | 9.2 | 14.3 |
 
 `analysis_result` and `highlight_groups` stay under 1.5 s for surah 2. Before
-this change, every document for Hafs surah 2 under both boundary plans took
-64 minutes in total.
+this change, every document for surah 2 under both boundary plans took 64
+minutes in total for Hafs and 73 for Warsh.
 
 ## Large requests
 
